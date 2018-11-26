@@ -69,8 +69,7 @@ def all_locations():
     for i in range (0,5):
         for j in range (0,5):
             all_loc += board[i][j]
-    #return all_loc
-    return ""
+    return all_loc
 
 def adjacent_location(location, direction):
     """Return the location next to the given one, in the given direction.
@@ -80,8 +79,7 @@ def adjacent_location(location, direction):
     (row, column) = location
     row += moves[direction][0]
     column += moves[direction][1]
-    #return (row, column)
-    return (0, 0)
+    return (row, column)
 
 def is_legal_move_by_musketeer(location, direction):
     """Tests if the Musketeer at the location can move in the direction.

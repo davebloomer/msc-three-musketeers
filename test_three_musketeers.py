@@ -25,7 +25,7 @@ boardw =  [ [_, _, _, M, _],
             [_, _, R, M, _],
             [_, R, _, M, _],
             [_, R, _, _, _],
-            [_, _, _, R, _] ] # board that meets winning condition
+            [_, _, _, R, R] ] # board that meets winning condition
 
 def test_create_board():
     create_board()
@@ -75,13 +75,42 @@ def test_location_to_string():
     assert location_to_string((4,1)) == 'E2'
         
 def test_at():
-    assert type(location_to_string((0,0))) == str
+    set_board(board1)
+    assert at((4,4)) == _
+    assert at((3,2)) == _
+    assert at((3,4)) == _
+    set_board(boardx)
+    assert at((4,4)) == _
+    assert at((2,1)) == R
+    assert at((2,0)) == _
+    set_board(boardw)
+    assert at((4,4)) == R
+    assert at((3,2)) == _
+    assert at((3,4)) == _
 
 def test_all_locations():
+    set_board(board1)
     assert type(all_locations()) == str
-    
+    assert all_locations() == '---M---RM--RMR--R------R-'
+    set_board(boardx)
+    assert all_locations() == 'M---M--R---R-R--R---M--R-'
+    set_board(boardw)
+    assert all_locations() == '---M---RM--R-M--R------RR'
+       
 def test_adjacent_location():
+    set_board(board1)
     assert type(adjacent_location((0,0),'left')) == tuple
+    adjacent_location((0,0),'down')  == (1, 0)
+    adjacent_location((1,2),'left')  == (1, 1)
+    adjacent_location((2,3),'right')  == (2, 4)
+    set_board(boardx)
+    adjacent_location((0,0),'down')  == (1, 0)
+    adjacent_location((2,3),'right')  == (2, 4)
+    adjacent_location((2,4),'left')  == (2, 3)    
+    set_board(boardw)
+    adjacent_location((1,2),'up')  == (0, 2)
+    adjacent_location((1,3),'left')  == (1, 2)
+    adjacent_location((1,4),'down')  == (2, 4)
     
 def test_is_legal_move_by_musketeer():
     assert type(is_legal_move_by_musketeer((0,0),'left')) == bool
@@ -97,10 +126,15 @@ def test_can_move_piece_at():
 
 def test_has_some_legal_move_somewhere():
     set_board(board1)
+    assert type(has_some_legal_move_somewhere(('M'))) == bool
     assert has_some_legal_move_somewhere('M') == True
     assert has_some_legal_move_somewhere('R') == True
-    # Eventually put at least three additional tests here
-    # with at least one additional board
+    set_board(boardx)
+    assert has_some_legal_move_somewhere('M') == False
+    assert has_some_legal_move_somewhere('R') == False
+    set_board(boardw)
+    assert has_some_legal_move_somewhere('M') == True
+    assert has_some_legal_move_somewhere('R') == True
 
 def test_possible_moves_from():
     assert type(possible_moves_from((0,0))) == list

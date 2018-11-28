@@ -94,7 +94,7 @@ def is_legal_move_by_enemy(location, direction):
     """Tests if the enemy at the location can move in the direction.
     You can assume that input will always be in correct range. Raises
     ValueError exception if at(location) is not 'R'"""
-    if at(location) != 'R' or at(adjacent_location(location, direction)) != '_':
+    if at(location) != 'R' or at(adjacent_location(location, direction)) != '-':
         raise ValueError('Move Not Valid.')
     else:
         return True
@@ -107,26 +107,52 @@ def is_legal_move(location, direction):
         return True
     else:
         return False
-    # Currently same as is_legal_location(location), change?
 
+#### Currently returns values for none possible values (eg. -1, 0) giving false results
 def can_move_piece_at(location):
     """Tests whether the player at the location has at least one move available.
     You can assume that input will always be in correct range."""
-    return True
+    direction = ('left', 'right', 'up', 'down')
+    if at(location) == 'M':
+        for dir in direction:
+            if at(adjacent_location(location, dir)) == 'R' and is_legal_move(location, dir) == True:          
+                return True
+                break
+    elif at(location) == 'R':
+        for dir in direction:
+            if at(adjacent_location(location, dir)) == '-' and is_legal_move(location, dir) == True:
+                return True
+                break
+    else:
+        return False
 
 def has_some_legal_move_somewhere(who):
     """Tests whether a legal move exists for player "who" (which must
     be either 'M' or 'R'). Does not provide any information on where
     the legal move is.
     You can assume that input will always be in correct range."""
-    return True
+    if len(all_possible_moves_for(who)) > 0:
+        return True
+    else:
+        return False
 
+#### Currently returns values for none possible values (eg. up when row 0) giving false results
 def possible_moves_from(location):
     """Returns a list of directions ('left', etc.) in which it is legal
        for the player at location to move. If there is no player at
        location, returns the empty list, [].
        You can assume that input will always be in correct range."""
-    return []
+    moves = []
+    direction = ('left', 'right', 'up', 'down')
+    if at(location) == 'M':
+        for dir in direction:
+            if at(adjacent_location(location, dir)) == 'R' and is_legal_move(location, dir) == True:
+                moves.append(dir)
+    elif at(location) == 'R':
+        for dir in direction:
+            if at(adjacent_location(location, dir)) == '-' and is_legal_move(location, dir) == True:
+                moves.append(dir)
+    return moves
 
 def is_legal_location(location):
     """Tests if the location is legal on a 5x5 board.
@@ -150,7 +176,23 @@ def all_possible_moves_for(player):
     """Returns every possible move for the player ('M' or 'R') as a list
     (location, direction) tuples.
     You can assume that input will always be in correct range."""
-    return [(0,0)]
+    player_loc = []
+    for i in range (0,5):
+        for j in range (0,5):
+            if board[i][j] == player:
+                player_loc.append((i,j))
+    moves = []
+    direction = ('left', 'right', 'up', 'down')
+    for loc in player_loc:
+        if player == 'M':
+            for dir in direction:
+                if is_within_board(loc, dir) == True and at(adjacent_location(loc, dir)) == 'R':
+                    moves.append((loc, dir))
+        elif player == 'R':
+            for dir in direction:
+                if is_within_board(loc, dir) == True and at(adjacent_location(loc, dir)) == '-':
+                     moves.append((loc, dir))
+    return moves
 
 def make_move(location, direction):
     """Moves the piece in location in the indicated direction.
@@ -158,18 +200,22 @@ def make_move(location, direction):
     be in correct range."""
     l1 = location
     l2 = adjacent_location(location, direction)
-    board[l1[0]][l1[1]], board[l2[0]][l2[1]] = '_', board[l1[0]][l1[1]]
+    board[l1[0]][l1[1]], board[l2[0]][l2[1]] = '-', board[l1[0]][l1[1]]
 
 def choose_computer_move(who):
     """The computer chooses a move for a Musketeer (who = 'M') or an
     enemy (who = 'R') and returns it as the tuple (location, direction),
     where a location is a (row, column) tuple as usual.
     You can assume that input will always be in correct range."""
-    return (0, 0)
+    from random import choice
+    if has_some_legal_move_somewhere(who) == False:
+        raise ValueError('No moves possible.')
+    else:    
+        return choice(all_possible_moves_for(who))
 
 def is_enemy_win():
     """Returns True if all 3 Musketeers are in the same row or column."""
-    for i in range (3,4):
+    for i in range (0,5):
         row = 0
         col = 0
         for j in range (0,5):
@@ -177,8 +223,7 @@ def is_enemy_win():
                 row += 1
             if board[j][i] == 'M':
                 col += 1
-        print(row, col)
-        if row or col >= 3:
+        if row > 2 or col > 2:
             return True
             break
     return False

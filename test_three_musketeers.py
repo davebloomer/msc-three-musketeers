@@ -25,7 +25,7 @@ boardw =  [ [_, _, _, M, _],
             [_, _, R, M, _],
             [_, R, _, M, _],
             [_, R, _, _, _],
-            [_, _, _, R, R] ] # board that meets winning condition
+            [_, _, _, R, R] ] # board that meets enemy winning condition
 
 def test_create_board():
     create_board()
@@ -130,17 +130,17 @@ def test_is_legal_move_by_musketeer():
 def test_is_legal_move_by_enemy():
     create_board()
     with pytest.raises(ValueError):
-        is_legal_move_by_musketeer((0,3),'down')
-        is_legal_move_by_musketeer((3,1),'left')   
+        is_legal_move_by_enemy((0,3),'down')
+        is_legal_move_by_enemy((3,1),'left')   
     set_board(board1)
-    assert is_legal_move_by_musketeer((3,1),'right') == True
-    assert is_legal_move_by_musketeer((1,2),'up') == True
+    assert is_legal_move_by_enemy((3,1),'right') == True
+    assert is_legal_move_by_enemy((1,2),'up') == True
     set_board(boardx)
     with pytest.raises(ValueError):
-        is_legal_move_by_musketeer((0,0), 'right')
-        is_legal_move_by_musketeer((0,3), 'left')
-    assert is_legal_move_by_musketeer((4,3),'right') == True
-    assert is_legal_move_by_musketeer((2,1),'up') == True
+        is_legal_move_by_enemy((0,0), 'right')
+        is_legal_move_by_enemy((0,3), 'left')
+    assert is_legal_move_by_enemy((4,3),'right') == True
+    assert is_legal_move_by_enemy((2,1),'up') == True
 
 def test_is_legal_move():
     assert type(is_legal_move((0,0),'left')) == bool
@@ -150,7 +150,12 @@ def test_is_legal_move():
     assert is_legal_move((4,4),'up') == True
 
 def test_can_move_piece_at():
+    set_board(board1)
     assert type(can_move_piece_at((0,0))) == bool
+    can_move_piece_at((0,0)) == False
+    can_move_piece_at((0,3)) == False
+    can_move_piece_at((1,3)) == True
+    can_move_piece_at((4,3)) == True
 
 def test_has_some_legal_move_somewhere():
     set_board(board1)
@@ -159,14 +164,21 @@ def test_has_some_legal_move_somewhere():
     assert has_some_legal_move_somewhere('R') == True
     set_board(boardx)
     assert has_some_legal_move_somewhere('M') == False
-    assert has_some_legal_move_somewhere('R') == False
+    assert has_some_legal_move_somewhere('R') == True
     set_board(boardw)
     assert has_some_legal_move_somewhere('M') == True
     assert has_some_legal_move_somewhere('R') == True
 
 def test_possible_moves_from():
+    create_board()
     assert type(possible_moves_from((0,0))) == list
-
+    assert possible_moves_from((0,0)) == []
+    assert possible_moves_from((2,2)) == ['left', 'right', 'up', 'down']
+    set_board(board1)
+    assert possible_moves_from((0,0)) == []
+    assert possible_moves_from((0,3)) == []
+    assert possible_moves_from((1,3)) == ['left', 'down']   
+    
 def test_is_legal_location():
     assert type(is_legal_location((0,0))) == bool
     assert is_legal_location((0,-1)) == False
@@ -184,29 +196,39 @@ def test_is_within_board():
     assert is_within_board((4,4),'up') == True
 
 def test_all_possible_moves_for():
+    create_board()
     assert type(all_possible_moves_for('M')) == list
     assert type(all_possible_moves_for('M')[0]) == tuple
+    all_possible_moves_for('R') == []
+    set_board(boardx)
+    assert all_possible_moves_for('M') == []
+    set_board(boardw)
+    assert all_possible_moves_for('M') == [((1, 3), 'left')]
     
 def test_make_move():
     create_board()
     make_move((2,2),'right')
-    assert at((2,2)) == '_'
-    assert at((2,3)) == 'M'
+    assert at((2,2)) == _
+    assert at((2,3)) == M
     make_move((3,2),'up')
-    assert at((3,2)) == '_'
-    assert at((2,2)) == 'R'
+    assert at((3,2)) == _
+    assert at((2,2)) == R
     set_board(board1)
     make_move((1,3),'down')
-    assert at((1,3)) == '_'
-    assert at((2,3)) == 'M'  
+    assert at((1,3)) == _
+    assert at((2,3)) == M 
     make_move((4,3),'up')
-    assert at((4,3)) == '_'
-    assert at((3,3)) == 'R'
+    assert at((4,3)) == _
+    assert at((3,3)) == R
     
 def test_choose_computer_move():
+    set_board(board1)
     assert type(choose_computer_move('M')) == tuple
-    # Should work for both 'M' and 'R'
-
+    assert type(choose_computer_move('R')) == tuple
+    set_board(boardx)
+    with pytest.raises(ValueError):
+        choose_computer_move('M')
+        
 def test_is_enemy_win():
     set_board(board1)
     assert type(is_enemy_win()) == bool

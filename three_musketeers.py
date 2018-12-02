@@ -108,7 +108,6 @@ def is_legal_move(location, direction):
     else:
         return False
 
-#### Currently returns values for none possible values (eg. -1, 0) giving false results
 def can_move_piece_at(location):
     """Tests whether the player at the location has at least one move available.
     You can assume that input will always be in correct range."""
@@ -136,7 +135,6 @@ def has_some_legal_move_somewhere(who):
     else:
         return False
 
-#### Currently returns values for none possible values (eg. up when row 0) giving false results
 def possible_moves_from(location):
     """Returns a list of directions ('left', etc.) in which it is legal
        for the player at location to move. If there is no player at
@@ -311,7 +309,7 @@ def move_enemy(users_side):
             print("You can't move there!")
             return move_enemy(users_side)
     else: # Computer plays enemy
-        (location, direction) = choose_computer_move('R')         
+        (location, direction) = choose_computer_move('R')        
         make_move(location, direction)
         describe_move("Enemy", location, direction)
         return board

@@ -99,7 +99,7 @@ def test_all_locations():
        
 def test_adjacent_location():
     set_board(board1)
-    assert type(adjacent_location((0,0),'left')) == tuple
+    assert type(adjacent_location((0,0),'right')) == tuple
     adjacent_location((0,0),'down')  == (1, 0)
     adjacent_location((1,2),'left')  == (1, 1)
     adjacent_location((2,3),'right')  == (2, 4)

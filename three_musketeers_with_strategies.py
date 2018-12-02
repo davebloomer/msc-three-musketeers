@@ -28,13 +28,14 @@ def adjacent_location_for_list(moves):
     Does not check if the location returned is legal on a 5x5 board.
     You can assume that input will always be in correct range."""    
     move_dest = []
-    for i in list:
-        move.dest.append(adjacent_location(i))
+    for i in moves:
+        (location, direction) = i
+        move_dest.append(adjacent_location(location, direction))
     return move_dest
 
 def player_locations(player):
     """Returns all locations for the player in a list of tuples.
-    Previously part of all_possible_move_for(), but useful input for relative
+    Previously part of all_possible_moves_for(), but useful input for relative
     distance calculations."""
     player_loc = []
     for i in range (0,5):
@@ -43,16 +44,31 @@ def player_locations(player):
                 player_loc.append((i,j))
     return player_loc
 
+def create_enemy_tactic():
+    """A games strategy will be chosen for 'R', this will vary from game to game
+    to increase difficulty. The output is a tuple of possible moves which are
+    prioritsed in order from left to right depending on availability."""
+    from random import choice
+    possible_tactics = [('left', 'up', 'down', 'right'),
+    ('left', 'down', 'up', 'right'),
+    ('right', 'up', 'down', 'left'),
+    ('right', 'down', 'up', 'left'),
+    ('up', 'left', 'right', 'down'),
+    ('up', 'right', 'left', 'down'),
+    ('down', 'left', 'left', 'up'),
+    ('down', 'left', 'left', 'up')]
+    global direction
+    direction = choice(possible_tactics)
+
 def all_possible_moves_for(player):
     """Returns every possible move for the player ('M' or 'R') as a list
     (location, direction) tuples.
     You can assume that input will always be in correct range."""
     player_loc = player_locations(player)
     moves = []
-    direction = ('left', 'right', 'up', 'down')
     for loc in player_loc:
         if player == 'M':
-            for dir in direction:
+            for dir in direction:  # direction defined in create_enemy_tactic()
                 if is_within_board(loc, dir) == True and at(adjacent_location(loc, dir)) == 'R':
                     moves.append((loc, dir))
         elif player == 'R':
@@ -65,28 +81,12 @@ def choose_musketeer_move():
     """Based on all possible moves for 'M', chooses move that maximises proxy
     for distance to other 'M' on board.
     Returns a tuple (location, direction), where location is a (row, column) tuple."""
-    loc = player_locations('M')
-    #for l in loc:
     return ((0,0))
-
-def create_enemy_tactic():
-    """A games strategy will be chosen for 'R', this will vary from game to game
-    to increase difficulty. The output is a tuple of possible moves which are
-    prioritsed in order from left to right depending on availability."""
-    direction_tac1 = ('left', 'up', 'down', 'right')
-    direction_tac2 = ('left', 'down', 'up', 'right')
-    direction_tac3 = ('right', 'up', 'down', 'left')
-    direction_tac4 = ('right', 'down', 'up', 'left')
-    direction_tac5 = ('up', 'left', 'right', 'down')
-    direction_tac6 = ('up', 'right', 'left', 'down')
-    direction_tac7 = ('down', 'left', 'left', 'up')
-    direction_tac8 = ('down', 'left', 'left', 'up')
-    global direction
-    direction = direction_tac1
-    return direction
 
 def choose_enemy_move():
     """Based on all possible moves for 'R', priotise moves that move in common
     direction, then moves that extend the game by creating possible moves for 'M'.
     Returns a tuple (location, direction), where location is a (row, column) tuple."""
+    m_moves = possible_moves_from(player_locations('M'))
+    e_moves = all_possible_moves_for('R')
     return ((0,0))

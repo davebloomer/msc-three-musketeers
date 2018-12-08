@@ -41,98 +41,102 @@ def string_to_location(s):
     The function should raise ValueError exception if the input
     is outside of the correct range (between 'A' and 'E' for s[0] and
     between '1' and '5' for s[1]"""
-    if ord(s[0]) < 65 or ord(s[0]) > 69:
+    if ord(s[0]) < 65 or ord(s[0]) > 69:  # Takes first character of input and converts to unicode, throws exception if not within range A-E
         raise ValueError('Row is out of bounds.')
-    if ord(s[1]) < 49 or ord(s[1]) > 53:
+    if ord(s[1]) < 49 or ord(s[1]) > 53:  # Takes second character of input and converts to unicode, throws exception if not within range 1-5
         raise ValueError('Column is out of bounds.')
-    return (ord(s[0])-65, ord(s[1])-49)
+    return (ord(s[0])-65, ord(s[1])-49)  # If input within valid range, uses offset of unicode value to convert to range 0-4
 
 def location_to_string(location):
     """Returns the string representation of a location.
     Similarly to the previous function, this function should raise
     ValueError exception if the input is outside of the correct range
     """
-    if location[0] < 0 or location[0] > 4:
+    if location[0] < 0 or location[0] > 4:  # Takes first character of input, throws exception if not within range 0-4
         raise ValueError('Row is out of bounds.')
-    if location[1] < 0 or location[1] > 4:
+    if location[1] < 0 or location[1] > 4:  # Takes second character of input, throws exception if not within range 0-4
         raise ValueError('Column is out of bounds.')
-    return chr(location[0]+65) + chr(location[1]+49)
+    return chr(location[0]+65) + chr(location[1]+49)  # If input within valid range, uses offset of unicode value to convert to range A-E and 1-5 respectively
 
 def at(location):
     """Returns the contents of the board at the given location.
     You can assume that input will always be in correct range."""
-    return board[location[0]][location[1]]
+    return board[location[0]][location[1]]  # Maps input location to board matrix in row, column order
 
 def all_locations():
     """Returns a list of all 25 locations on the board."""
-    all_loc = ""
-    for i in range (0,5):
+    all_loc = []  # Initialises empty list, to contain contents of all locations on board
+    for i in range (0,5):  # ij iteration required to perform logic on all cells within global board variable
         for j in range (0,5):
-            all_loc += board[i][j]
+            all_loc.append(board[i][j])  # Contents of each elements within board are concatenated to list
     return all_loc
 
 def adjacent_location(location, direction):
     """Return the location next to the given one, in the given direction.
     Does not check if the location returned is legal on a 5x5 board.
     You can assume that input will always be in correct range."""
-    moves = {'left': (0,-1), 'right': (0,1), 'up': (-1,0), 'down': (1,0)}
-    (row, column) = location
-    row += moves[direction][0]
+    moves = {'left': (0,-1), 'right': (0,1), 'up': (-1,0), 'down': (1,0)}  # Dictionary is defined to map hyperparameter direction to mathematical operators to be combined through addition
+    (row, column) = location  # Hyperparameter location split in to row and column element
+    row += moves[direction][0]  # Relevant calculation performed on row and column as defined through dictionary (-/+ 1)
     column += moves[direction][1]
-    return (row, column)
+    return (row, column)  # Row and column recombined to form tuple
 
 def is_legal_move_by_musketeer(location, direction):
     """Tests if the Musketeer at the location can move in the direction.
     You can assume that input will always be in correct range. Raises
     ValueError exception if at(location) is not 'M'"""
-    if at(location) != 'M' or at(adjacent_location(location, direction)) != 'R':
-        raise ValueError('Move Not Valid.')
+    if at(location) != 'M' or at(adjacent_location(location, direction)) != 'R':  # Logic checks character at hyperparameter location is musketeer and enemy present in hyperparameter direction
+        raise ValueError('Move Not Valid.')  # If either logic statements is false, an exception is thrown
     else:
-        return True
+        return True  # Otherwise, the move is valid
 
 def is_legal_move_by_enemy(location, direction):
     """Tests if the enemy at the location can move in the direction.
     You can assume that input will always be in correct range. Raises
     ValueError exception if at(location) is not 'R'"""
-    if at(location) != 'R' or at(adjacent_location(location, direction)) != '-':
-        raise ValueError('Move Not Valid.')
+    if at(location) != 'R' or at(adjacent_location(location, direction)) != '-':  # Logic checks character at hyperparameter location is enemy and empty space present in hyperparameter direction
+        raise ValueError('Move Not Valid.')  # If either logic statements is false, an exception is thrown
     else:
-        return True
+        return True  # Otherwise, the move is valid
 
+def is_legal_location(location):
+    """Tests if the location is legal on a 5x5 board.
+    You can assume that input will always be a pair of integers."""
+    if location[0]  < 0 or location[0] > 4:  # Takes first character of input, return False if not within range 0-4
+        return False
+    elif location[1] < 0 or location[1] > 4:  # Takes second character of input, return False if not within range 0-4
+        return False
+    else:
+        return True  # If both logic statements are not met, return False
+    
 def is_legal_move(location, direction):
     """Tests whether it is legal to move the piece at the location
     in the given direction.
     You can assume that input will always be in correct range."""
-    if is_legal_location(adjacent_location(location, direction)) == True:
-        return True
-    else:
-        return False
+    # Uses function adjacent_location to find resulting position of move, then function is_legal_location to check if valid and determine output
+    return is_legal_location(adjacent_location(location, direction))
+
+def is_within_board(location, direction):
+    """Tests if the move stays within the boundaries of the board.
+    You can assume that input will always be in correct range."""
+    # Uses function adjacent_location to find resulting position of move, then function is_legal_location to check if valid and determine output
+    return is_legal_location(adjacent_location(location, direction))
 
 def can_move_piece_at(location):
     """Tests whether the player at the location has at least one move available.
     You can assume that input will always be in correct range."""
-    direction = ('left', 'right', 'up', 'down')
-    if at(location) == 'M':
-        for dir in direction:
-            if at(adjacent_location(location, dir)) == 'R' and is_legal_move(location, dir) == True:          
-                return True
+    direction = ('left', 'right', 'up', 'down')  # Local variable defined containing all legal (perpendicular) move directions
+    if at(location) == 'M':  # Uses at function to determine player at hyperparameter location, if musketeer:
+        for dir in direction:  # Itererate through each element in variable direction
+            if at(adjacent_location(location, dir)) == 'R' and is_legal_move(location, dir) == True:  # If location in direction contains enemy and is legal move         
+                return True  # Return True and break
                 break
-    elif at(location) == 'R':
+    elif at(location) == 'R':  # Alternate scenario, if player at hyperparameter location is enemy:
         for dir in direction:
-            if at(adjacent_location(location, dir)) == '-' and is_legal_move(location, dir) == True:
-                return True
+            if at(adjacent_location(location, dir)) == '-' and is_legal_move(location, dir) == True:  # If location in direction contains empty space and is legal move
+                return True  # Return True and break
                 break
-    else:
-        return False
-
-def has_some_legal_move_somewhere(who):
-    """Tests whether a legal move exists for player "who" (which must
-    be either 'M' or 'R'). Does not provide any information on where
-    the legal move is.
-    You can assume that input will always be in correct range."""
-    if len(all_possible_moves_for(who)) > 0:
-        return True
-    else:
+    else:  # Else condition, if no valid moves are present for player at location, return False
         return False
 
 def possible_moves_from(location):
@@ -140,91 +144,77 @@ def possible_moves_from(location):
        for the player at location to move. If there is no player at
        location, returns the empty list, [].
        You can assume that input will always be in correct range."""
-    moves = []
-    direction = ('left', 'right', 'up', 'down')
-    if at(location) == 'M':
-        for dir in direction:
-            if at(adjacent_location(location, dir)) == 'R' and is_legal_move(location, dir) == True:
-                moves.append(dir)
+    moves = []  # Initialises empty list, to contain all valid move directions
+    direction = ('left', 'right', 'up', 'down')  # Local variable defined containing all legal (perpendicular) move directions
+    if at(location) == 'M':  # Uses at function to determine player at hyperparameter location, if musketeer:
+        for dir in direction:  # Itererate through each element in variable direction
+            if at(adjacent_location(location, dir)) == 'R' and is_legal_move(location, dir) == True:  # If location in direction contains enemy and is legal move
+                moves.append(dir)  # Append list with valid move direction
     elif at(location) == 'R':
-        for dir in direction:
+        for dir in direction:  # Alternate scenario, if player at hyperparameter location is enemy:
             if at(adjacent_location(location, dir)) == '-' and is_legal_move(location, dir) == True:
-                moves.append(dir)
+                moves.append(dir)  # Append list with valid move direction
     return moves
-
-def is_legal_location(location):
-    """Tests if the location is legal on a 5x5 board.
-    You can assume that input will always be a pair of integers."""
-    if location[0]  < 0 or location[0] > 4:
-        return False
-    elif location[1] < 0 or location[1] > 4:
-        return False
-    else:
-        return True
-    
-def is_within_board(location, direction):
-    """Tests if the move stays within the boundaries of the board.
-    You can assume that input will always be in correct range."""
-    if is_legal_location(adjacent_location(location, direction)) == True:
-        return True
-    else:
-        return False
     
 def all_possible_moves_for(player):
     """Returns every possible move for the player ('M' or 'R') as a list
     (location, direction) tuples.
     You can assume that input will always be in correct range."""
-    player_loc = []
-    for i in range (0,5):
+    player_loc = []  # Initialises empty list, to contain all locations for hyperparameter player
+    for i in range (0,5):  # ij iteration required to perform logic on all cells within global board variable
         for j in range (0,5):
-            if board[i][j] == player:
-                player_loc.append((i,j))
-    moves = []
-    direction = ('left', 'right', 'up', 'down')
-    for loc in player_loc:
-        if player == 'M':
-            for dir in direction:
-                if is_within_board(loc, dir) == True and at(adjacent_location(loc, dir)) == 'R':
-                    moves.append((loc, dir))
-        elif player == 'R':
-            for dir in direction:
-                if is_within_board(loc, dir) == True and at(adjacent_location(loc, dir)) == '-':
-                     moves.append((loc, dir))
+            if board[i][j] == player:  # If location on board is equal to hyperparameter player
+                player_loc.append((i,j))  # Append player location to list
+    moves = []  # Initialises empty list, to contain all valid moves for each location in list
+    for loc in player_loc:  # For each player location
+        for dir in possible_moves_from(loc):  # Determine valid move directions from function possible_moves_from
+            moves.append((loc, dir))  # Append list with combination of player location and direction
     return moves
+
+def has_some_legal_move_somewhere(who):
+    """Tests whether a legal move exists for player "who" (which must
+    be either 'M' or 'R'). Does not provide any information on where
+    the legal move is.
+    You can assume that input will always be in correct range."""
+    # Performs count on putputs from function all_possible_moves_for, if number of valid moves is greater than zero return True
+    if len(all_possible_moves_for(who)) > 0:
+        return True
+    else:
+        return False
 
 def make_move(location, direction):
     """Moves the piece in location in the indicated direction.
     Doesn't check if the move is legal. You can assume that input will always
     be in correct range."""
-    l1 = location
-    l2 = adjacent_location(location, direction)
-    board[l1[0]][l1[1]], board[l2[0]][l2[1]] = '-', board[l1[0]][l1[1]]
+    l1 = location  # Starting position for move
+    l2 = adjacent_location(location, direction)  # Ending position for move, determined using function adjacent_location
+    board[l1[0]][l1[1]], board[l2[0]][l2[1]] = '-', board[l1[0]][l1[1]]  # Contents of board are copied from starting to ending location, and replaced with empty space (-)
 
 def choose_computer_move(who):
     """The computer chooses a move for a Musketeer (who = 'M') or an
     enemy (who = 'R') and returns it as the tuple (location, direction),
     where a location is a (row, column) tuple as usual.
     You can assume that input will always be in correct range."""
-    from random import choice
-    if has_some_legal_move_somewhere(who) == False:
-        raise ValueError('No moves possible.')
+    from random import choice  # Import choice from library random, chooses random element from a non-empty sequence
+    if has_some_legal_move_somewhere(who) == False:  # Logic checks if any moves are possible for hyperparameter who using function has_some_legal_move_somewhere
+        raise ValueError('No moves possible.')  # If False, an exception is thrown
     else:    
-        return choice(all_possible_moves_for(who))
+        return choice(all_possible_moves_for(who))  # Returns random element of output of function all_possible_moves_for for hyperparameter who (computer)
 
 def is_enemy_win():
     """Returns True if all 3 Musketeers are in the same row or column."""
-    for i in range (0,5):
-        row = 0
-        col = 0
-        for j in range (0,5):
-            if board[i][j] == 'M':
-                row += 1
-            if board[j][i] == 'M':
+    for i in range (0,5):  # i iteration represents that one row and one column will be inspected each loop
+        row = 0  # Initialises variable, to contain all occurances of musketeers in each row and column inspected
+        col = 0  # Variables are reset each i iternation, as no of occurances must be contained within a given row or column
+        for j in range (0,5):  # j iteration represents elements within each row and column specified in i iteration
+            if board[i][j] == 'M':  # In first logic, i remains constant in index position one, representing row i
+                row += 1  # Iterating through j element positions, one is increased to count if musketeer is present
+            if board[j][i] == 'M':  # In second logic, i remains constant in index position two, representing column i
                 col += 1
-        if row > 2 or col > 2:
-            return True
+        if row == 3 or col == 3:  # If either row or column i contain three musketeers, the enemy wins game
+            return True  # Returns true and iteration breaks
             break
-    return False
+    return False  # If conditions not met, return False
 
 #---------- Communicating with the user ----------
 #----you do not need to modify code below unless you find a bug

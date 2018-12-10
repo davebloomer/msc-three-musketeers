@@ -90,12 +90,12 @@ def test_at():
 
 def test_all_locations():
     set_board(board1)
-    assert type(all_locations()) == str
-    assert all_locations() == '---M---RM--RMR--R------R-'
+    assert type(all_locations()) == list
+    assert all_locations() == ['-','-','-','M','-','-','-','R','M','-','-','R','M','R','-','-','R','-','-','-','-','-','-','R','-']
     set_board(boardx)
-    assert all_locations() == 'M---M--R---R-R--R---M--R-'
+    assert all_locations() == ['M','-','-','-','M','-','-','R','-','-','-','R','-','R','-','-','R','-','-','-','M','-','-','R','-']
     set_board(boardw)
-    assert all_locations() == '---M---RM--R-M--R------RR'
+    assert all_locations() == ['-','-','-','M','-','-','-','R','M','-','-','R','-','M','-','-','R','-','-','-','-','-','-','R','R']
        
 def test_adjacent_location():
     set_board(board1)
@@ -143,11 +143,13 @@ def test_is_legal_move_by_enemy():
     assert is_legal_move_by_enemy((2,1),'up') == True
 
 def test_is_legal_move():
+    set_board(boardx)
     assert type(is_legal_move((0,0),'left')) == bool
     assert is_legal_move((0,0),'left') == False
-    assert is_legal_move((0,0),'right') == True
-    assert is_legal_move((4,4),'down') == False
-    assert is_legal_move((4,4),'up') == True
+    assert is_legal_move((1,2),'up') == True
+    set_board(boardw)
+    assert is_legal_move((3,4),'down') == False
+    assert is_legal_move((1,3),'left') == True
 
 def test_can_move_piece_at():
     set_board(board1)

@@ -1,5 +1,4 @@
 import pytest
-from three_musketeers import *
 from three_musketeers_with_strategies import *
 
 left = 'left'
@@ -33,7 +32,7 @@ def test_adjacent_location_for_list():
     assert adjacent_location_for_list([((0, 0), 'right')]) == [(0, 1)]
     assert adjacent_location_for_list([((0, 0), 'right'), ((4, 4), 'up')]) == [(0, 1), (3, 4)]
     set_board(board1)
-    assert adjacent_location_for_list(all_possible_moves_for('M')) == [(1, 2), (2, 3), (2, 1), (2, 3), (1, 2)]
+    assert adjacent_location_for_list(all_possible_moves_for('M')) == [(1, 2), (2, 3), (2, 1), (1, 2), (2, 3)]
     set_board(boardw)
     assert adjacent_location_for_list(all_possible_moves_for('M')) == [(1, 2)]
 
@@ -49,19 +48,19 @@ def test_player_locations():
 
 def test_all_possible_moves_for():
     set_board(boardw)
-    direction = ('left', 'down', 'up', 'right')
+    set_tactic('M', ('left', 'up', 'down', 'right'))
     assert type(all_possible_moves_for('M')) == list
     assert all_possible_moves_for('M') == [((1, 3), 'left')]
-    assert all_possible_moves_for('R') == [((1, 2), 'left'), ((1, 2), 'down'), ((1, 2), 'up'),  ((2, 1), 'left'),
+    assert all_possible_moves_for('R') == [((1, 2), 'left'), ((1, 2), 'up'), ((1, 2), 'down'),  ((2, 1), 'left'),
                                      ((2, 1), 'up'), ((2, 1), 'right'), ((3, 1), 'left'), ((3, 1), 'down'),
                                      ((3, 1), 'right'), ((4, 3), 'left'), ((4, 3), 'up'), ((4, 4), 'up')]
     
 def test_choose_musketeer_move():
     set_board(board1)
-    direction = ('left', 'down', 'up', 'right')  
+    set_tactic('M', ('left', 'up', 'down', 'right'))
     assert type(choose_musketeer_move()) == tuple
 
 def test_chooseenemy_move():
     set_board(board1)
-    direction = ('left', 'down', 'up', 'right')  
+    set_tactic('M', ('left', 'up', 'down', 'right'))
     assert type(choose_enemy_move()) == tuple

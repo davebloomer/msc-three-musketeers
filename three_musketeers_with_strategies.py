@@ -1,5 +1,8 @@
 # Improving Computer AI
 
+# FAQ
+# https://moodle.bbk.ac.uk/mod/forum/discuss.php?d=104920
+
 # Ideas from Birkbeck:
 # The three Musketeers should try to stay as far away from one another as possible.  
 # Cardinal Richelieu's men should try to all move in the same direction.
@@ -22,6 +25,11 @@
 #    maximises distance
 
 # Changes will be required to game code following implementation..
+
+# Adv thoughts...
+# - It is not R direction that is important, but forcing M to move in that direction
+#   Although one might be proxy for other..
+# - Could come up with implementation to play n games, compare AI and rank
 
 #%% Code from base implementation - required to be included for pytest
 
@@ -201,17 +209,14 @@ def computer_tactic(difficulty):
     prioritsed in order from left to right depending on availability."""
     select_tactic = ''
     if difficulty == 'H':
-        from random import choice
         select_tactic = choice(['ugsRGv','Wq4d66','KhzYQv','Vn4SHy','WuvaNj','gHwrEP','WfGHet','W8vzXJ'])
-    global tactic
     tactic = (difficulty, select_tactic)
-    #return (difficulty, tactic_lookup[tactic[1]])
 
 # Not required? Tactic variable is local within start()
-def tactic_lookup(tactic):
+def tactic_lookup():
     """In order not to have enemy tactic visable as global variable, a dictionary
     is defined to anonamise the tactic to the player."""
-    tactic_lookup = {
+    tactic_dict = {
             'ugsRGv': ('left', 'up', 'down', 'right'),
             'Wq4d66': ('left', 'down', 'up', 'right'),
             'KhzYQv': ('right', 'up', 'down', 'left'),
@@ -220,12 +225,18 @@ def tactic_lookup(tactic):
             'gHwrEP': ('up', 'right', 'left', 'down'),
             'WfGHet': ('down', 'left', 'right', 'up'),
             'W8vzXJ': ('down', 'right', 'left', 'up') }
-    return tactic_lookup[tactic[1]]
+    return tactic_dict[tactic[1]]
 
 def set_tactic(difficulty, new_tactic):
-    """Replaces the global tactic with new_tactic."""
-    global tactic
+    """Replaces the tactic with new_tactic. Useful for testing."""
     tactic = (difficulty, new_tactic)
+    
+def distance(location1, location2):
+    """Returnsthe distance between two locations on board.
+    Independant of possible range of board locaitons."""
+    (row1, col1) = location1
+    (row2, col2) = location2
+    return round(((row2-row1)**2 + (col2-col1)**2)**0.5, 1)
 
 def adjacent_location_for_list(moves):
     """Calculates location next to given one, in the given direction, for use
@@ -250,44 +261,36 @@ def player_locations(player):
     distance calculations."""
     return [(i, j) for i in range(0,5) for j in range(0,5) if board[i][j] == player]
 
-def possible_moves_from(location):
+def possible_moves_from(location, legal=True):
     moves = []
-    direction = ('left', 'up', 'down', 'right') #tactic[1]
+    direction = ('left', 'up', 'down', 'right') #tactic[1]?  # might not be correct way to do it
     if at(location) == 'M':
         for dir in direction:
-            if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == 'R':
-                moves.append(dir)
+            if legal == True:
+                if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == 'R':
+                    moves.append(dir)
+            else:
+                if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == '-':
+                    moves.append(dir)
     elif at(location) == 'R':
         for dir in direction:
-            if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == '-':
-                moves.append(dir)
+            if legal == True:
+                if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == '-':
+                    moves.append(dir)
+            else:
+                if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) != '-':
+                    moves.append(dir)
     return moves
 
-def possible_moves_from_for_list(locations):
-    moves = []
-    direction = ('left', 'up', 'down', 'right') #tactic[1]
-    for loc in locations:
-        if at(loc) == 'M':
-            for dir in direction:
-                if is_within_board(loc, dir) == True: # and at(adjacent_location(loc, dir)) == 'R':
-                    moves.append((loc, dir))
-        elif at(loc) == 'R':
-            for dir in direction:
-                if is_within_board(loc, dir) == True: # and at(adjacent_location(loc, dir)) == '-':
-                    moves.append((loc, dir))
-    return moves
-
-def all_possible_moves_for(player):
-    """Returns every possible move for the player ('M' or 'R') as a list
-    (location, direction) tuples.
-    You can assume that input will always be in correct range."""
+def all_possible_moves_for(player, legal=True):
     player_loc = player_locations(player)
     moves = []
     for loc in player_loc:
-        for dir in possible_moves_from(loc):
+        for dir in possible_moves_from(loc, legal):
             moves.append((loc, dir))
     return moves
 
+# iterator function to avoid redundancy?
 def choose_musketeer_move():
     """Based on all possible moves for 'M', chooses move that maximises proxy
     for distance to other 'M' on board.
@@ -296,36 +299,139 @@ def choose_musketeer_move():
         from random import choice
         return choice(all_possible_moves_for('M'))
     elif tactic[0] == 'M':
-        return ((0,0), 'right')
-    else:
-        return ((0,0), 'right')
+        moves = []
+        m_locations = player_locations('M')
+        m_moves = all_possible_moves_for('M')
+        for i in range (0, 3):
+            for j in range (0, len(m_moves)):
+                if m_locations[i] != m_moves[j][0]:
+                    m_loc, m_dir = m_moves[j][0], m_moves[j][1]
+                    m_next = adjacent_location(m_loc, m_dir)                 
+                    moves.append((distance(m_next,m_locations[i]),m_moves[j]))  # pair-wise results, triangulation would be better
+        moves = sorted(moves, reverse=True)
+        return moves[0][1]
+    else:  # +avoid row/column
+        moves = []
+        m_locations = player_locations('M')
+        m_moves = all_possible_moves_for('M')
+        for i in range (0, 3):
+            for j in range (0, len(m_moves)):
+                if m_locations[i] != m_moves[j][0]:
+                    m_loc, m_dir = m_moves[j][0], m_moves[j][1]
+                    m_next = adjacent_location(m_loc, m_dir)                
+                    if m_next[0] != m_locations[i][0] and m_next[1] != m_locations[i][1]:
+                        moves.append((distance(m_next,m_locations[i]),m_moves[j]))
+        moves = sorted(moves, reverse=True)
+        return moves[0][1]
 
 def choose_enemy_move():
     """Based on all possible moves for 'R', priotise moves that move in common
     direction, then moves that extend the game by creating possible moves for 'M'.
     Returns a tuple (location, direction), where location is a (row, column) tuple."""
     if tactic[0] == 'E':
-        from random import choice
         return choice(all_possible_moves_for('R'))
     elif tactic[0] == 'M':
-        m_moves = adjacent_location_for_list(possible_moves_from_for_list(player_locations('M')))
-        e_moves = adjacent_location_for_list(all_possible_moves_for('R'))
-        #return choice[m for m in m_moves for e in e_moves if m==e]  # Missing direction
-        return ((0,0), 'right')
+        m_moves = all_possible_moves_for('M', legal=False)
+        e_moves = all_possible_moves_for('R')
+        moves = []
+        for i in range (0, len(e_moves)):
+            e_loc, e_dir = e_moves[i][0], e_moves[i][1]
+            e_move = adjacent_location(e_loc, e_dir)
+            for j in range (0, len(m_moves)):
+                m_loc, m_dir = m_moves[j][0], m_moves[j][1]
+                m_move = adjacent_location(m_loc, m_dir)
+                if e_move == m_move:
+                    moves.append(e_moves[i])
+        return choice(moves)
     else:
-        return ((0,0), 'right')
+        m_moves = all_possible_moves_for('M', legal=False)  # repetition!!
+        e_moves = all_possible_moves_for('R')
+        moves = []
+        for i in range (0, len(e_moves)):
+            e_loc, e_dir = e_moves[i][0], e_moves[i][1]
+            e_move = adjacent_location(e_loc, e_dir)
+            for j in range (0, len(m_moves)):
+                m_loc, m_dir = m_moves[j][0], m_moves[j][1]
+                m_move = adjacent_location(m_loc, m_dir)
+                if e_move == m_move:
+                    moves.append(e_moves[i])
+        move = []
+        for dir in tactic[1]:
+            for m in moves:
+                if m[1] == dir:
+                    move.append(m)
+            if len(move) > 0:
+                break
+                return choice(moves)
+        return choice(moves)
 
-#%% User communication update
-
-#---------- Communicating with the user ----------
+#%%---------- Communicating with the user ----------
 #----you do not need to modify code below unless you find a bug
 #----a bug in it before you move to stage 3
 
+def print_board():
+    print("    1  2  3  4  5")
+    print("  ---------------")
+    ch = "A"
+    for i in range(0, 5):
+        print(ch, "|", end = " ")
+        for j in range(0, 5):
+            print(board[i][j] + " ", end = " ")
+        print()
+        ch = chr(ord(ch) + 1)
+    print()
+
+def print_instructions():
+    print()
+    print("""To make a move, enter the location of the piece you want to move,
+and the direction you want it to move. Locations are indicated as a
+letter (A, B, C, D, or E) followed by an integer (1, 2, 3, 4, or 5).
+Directions are indicated as left, right, up, or down (or simply L, R,
+U, or D). For example, to move the Musketeer from the top right-hand
+corner to the row below, enter 'A5 left' (without quotes).
+For convenience in typing, you may use lowercase letters.""")
+    print()
+
+def choose_users_side():
+    """Returns 'M' if user is playing Musketeers, 'R' otherwise."""
+    user = ""
+    while user != 'M' and user != 'R':
+        answer = input("Would you like to play Musketeer (M) or enemy (R)? ")
+        answer = answer.strip()
+        if answer != "":
+            user = answer.upper()[0]
+    return user
+
+def describe_move(who, location, direction):
+    """Prints a sentence describing the given move."""
+    new_location = adjacent_location(location, direction)
+    print(who, 'moves', direction, 'from',\
+          location_to_string(location), 'to',\
+          location_to_string(new_location) + ".\n")
+
+#%% User communication updates
+
+def get_users_move():
+    """Gets a legal move from the user, and returns it as a
+       (location, direction) tuple."""    
+    directions = {'L':'left', 'R':'right', 'U':'up', 'D':'down'}
+    move = input("Your move? ").upper().replace(' ', '')
+    if (len(move) >= 3
+            and move[0] in 'ABCDE'
+            and move[1] in '12345'
+            and move[2] in 'LRUD'):
+        location = string_to_location(move[0:2])
+        direction = directions[move[2]]
+        if is_legal_move(location, direction):
+            return (location, direction)
+    print("Illegal move--'" + move + "'")
+    return get_users_move()
+
 def choose_difficulty():
-    """Returns 'E' or 'H' if user has selected easy or hard difficulty."""
+    """Returns 'E', 'M' or 'H' based on user selectedstart difficulty."""
     difficulty = ""
-    while difficulty != 'E' and difficulty != 'H':
-        answer = input("Select computer difficulty level. Easy (E) or Hard (H)? ")
+    while difficulty != 'E' and difficulty != 'M' and difficulty != 'H':
+        answer = input("Select computer difficulty level. Easy (E), Medium (M) or Hard (H)? ")
         answer = answer.strip()
         if answer != "":
             difficulty = answer.upper()[0]
@@ -368,6 +474,7 @@ def move_enemy(users_side):
 
 def start():
     """Plays the Three Musketeers Game."""
+    from random import choice
     users_side = choose_users_side()
     difficulty = choose_difficulty()
     board = create_board()

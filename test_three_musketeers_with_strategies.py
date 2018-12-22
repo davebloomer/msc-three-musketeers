@@ -1,4 +1,5 @@
 import pytest
+from random import choice
 from three_musketeers_with_strategies import *
 
 left = 'left'
@@ -26,6 +27,12 @@ boardw =  [ [_, _, _, M, _],
             [_, R, _, M, _],
             [_, R, _, _, _],
             [_, _, _, R, R] ] # board that meets enemy winning condition
+
+boardt =  [ [R, R, R, R, M],
+            [_, R, R, R, R],
+            [R, _, _, R, R],
+            [_, M, _, R, R],
+            [_, _, M, _, R] ] # logic test for tactics
 
 def test_adjacent_location_for_list():
     assert type(adjacent_location_for_list([((0, 0), 'right')])) == list

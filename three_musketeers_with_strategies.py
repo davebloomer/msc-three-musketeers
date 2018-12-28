@@ -147,16 +147,6 @@ def make_move(location, direction):
     l2 = adjacent_location(location, direction)  # Ending position for move, determined using function adjacent_location
     board[l1[0]][l1[1]], board[l2[0]][l2[1]] = '-', board[l1[0]][l1[1]]  # Contents of board are copied from starting to ending location, and replaced with empty space (-)
 
-def choose_computer_move(who):
-    """The computer chooses a move for a Musketeer (who = 'M') or an
-    enemy (who = 'R') and returns it as the tuple (location, direction),
-    where a location is a (row, column) tuple as usual.
-    You can assume that input will always be in correct range."""
-    if has_some_legal_move_somewhere(who) == False:  # Logic checks if any moves are possible for hyperparameter who using function has_some_legal_move_somewhere
-        raise ValueError('No moves possible.')  # If False, an exception is thrown
-    else:    
-        return choice(all_possible_moves_for(who))  # Returns random element of output of function all_possible_moves_for for hyperparameter who (computer)
-
 def is_enemy_win():
     """Returns True if all 3 Musketeers are in the same row or column."""
     for i in range (0,5):  # i iteration represents that one row and one column will be inspected each loop
@@ -285,23 +275,22 @@ def choose_musketeer_move(difficulty='E'):
             for j in range (0, len(m_moves)):
                 if m_locations[i] != m_moves[j][0]:
                     m_loc, m_dir = m_moves[j][0], m_moves[j][1]
-                    m_next = adjacent_location(m_loc, m_dir)                 
-                    moves.append((distance(m_next,m_locations[i]),m_moves[j]))  # pair-wise results, triangulation would be better
-        moves = sorted(moves, reverse=True)
-        return moves[0][1]
-    else:  # +avoid row/column
+                    m_next = adjacent_location(m_loc, m_dir)                
+                    if m_next[0] != m_locations[i][0] and m_next[1] != m_locations[i][1]:  # avoid common row and column
+                        moves.append(m_moves[j])
+        if len(moves) == 0:
+            moves = m_moves
+        return choice(moves)
+    else:
         moves = []
         m_locations = player_locations('M')
         m_moves = all_possible_moves_for('M')
         for i in range (0, 3):
             for j in range (0, len(m_moves)):
-                if m_locations[i] != m_moves[j][0]:
+                if m_locations[i] == m_moves[j][0]:
                     m_loc, m_dir = m_moves[j][0], m_moves[j][1]
-                    m_next = adjacent_location(m_loc, m_dir)                
-                    if m_next[0] != m_locations[i][0] and m_next[1] != m_locations[i][1]:
-                        moves.append((distance(m_next,m_locations[i])+10,m_moves[j]))
-                    else:
-                        moves.append((distance(m_next,m_locations[i]),m_moves[j]))
+                    m_next = adjacent_location(m_loc, m_dir)                 
+                    moves.append((area(m_next,m_locations[i-1],m_locations[i-2]),m_moves[j]))  # area
         moves = sorted(moves, reverse=True)
         return moves[0][1]
 
@@ -328,7 +317,7 @@ def choose_enemy_move(difficulty='E'):
             moves = all_possible_moves_for('R', legal=True)
         return choice(moves)
     else:
-        m_moves = all_possible_moves_for('M', legal=False)  # repetition!!
+        m_moves = all_possible_moves_for('M', legal=False)
         e_moves = all_possible_moves_for('R')
         moves = []
         for i in range (0, len(e_moves)):
@@ -338,14 +327,14 @@ def choose_enemy_move(difficulty='E'):
                 m_loc, m_dir = m_moves[j][0], m_moves[j][1]
                 m_move = adjacent_location(m_loc, m_dir)
                 if e_move == m_move:
-                    moves.append(e_moves[i])
+                    moves.append((m_moves[j], e_moves[i]))
         if len(moves) == 0:
-            moves = all_possible_moves_for('R', legal=True)
+            return choice(all_possible_moves_for('R', legal=True))
         move = []
-        for dir in e_tactic[1]:
+        for dir in tactic_lookup():
             for m in moves:
-                if m[1] == dir:
-                    move.append(m)
+                if m[0][1] == dir:
+                    move.append(m[1])
             if len(move) > 0:
                 return choice(move)
 
@@ -498,6 +487,7 @@ def start():
 #%% Tactics Evaluation
         
 def play_sim(n, mdiff='E', ediff='E'):
+    computer_tactic(ediff)
     m_win = 0
     e_win = 0
     m_log = []
@@ -507,7 +497,7 @@ def play_sim(n, mdiff='E', ediff='E'):
         moves = 0
         while True:
             if has_some_legal_move_somewhere('M'):
-                board = auto_move_musketeer(ediff)
+                board = auto_move_musketeer(mdiff)
                 moves += 1
                 if is_enemy_win():
                     e_win += 1  # Cardinal Richleau's men win!
@@ -518,7 +508,7 @@ def play_sim(n, mdiff='E', ediff='E'):
                 m_log.append(moves)
                 break
             if has_some_legal_move_somewhere('R'):
-                board = auto_move_enemy(mdiff)
+                board = auto_move_enemy(ediff)
                 moves += 1
             else:
                 m_win += 1  # The Musketeers win!
@@ -538,4 +528,3 @@ def auto_move_musketeer(mdiff='E'):
 def auto_move_enemy(ediff='E'):
         (location, direction) = choose_enemy_move(ediff)
         make_move(location, direction)
-        #return board

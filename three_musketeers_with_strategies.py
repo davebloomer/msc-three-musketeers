@@ -69,7 +69,7 @@ def adjacent_location(location, direction):
     row += moves[direction][0]  # Relevant calculation performed on row and column as defined through dictionary (-/+ 1)
     column += moves[direction][1]
     return (row, column)  # Row and column recombined to form tuple
-
+    
 def is_legal_move_by_musketeer(location, direction):
     """Tests if the Musketeer at the location can move in the direction.
     You can assume that input will always be in correct range. Raises
@@ -261,7 +261,7 @@ def all_possible_moves_for(player, legal=True):
             moves.append((loc, dir))
     return moves
 
-def choose_musketeer_move(difficulty='E'):
+def choose_musketeer_move(difficulty='H'):
     """Based on all possible moves for 'M', chooses move that maximises proxy
     for distance to other 'M' on board.
     Returns a tuple (location, direction), where location is a (row, column) tuple."""
@@ -294,7 +294,7 @@ def choose_musketeer_move(difficulty='E'):
         moves = sorted(moves, reverse=True)
         return moves[0][1]
 
-def choose_enemy_move(difficulty='E'):
+def choose_enemy_move(difficulty='H'):
 # replaces choose_computer_move('R')
     """Based on all possible moves for 'R', prioritise moves that move in common
     direction, then moves that extend the game by creating possible moves for 'M'.
@@ -485,38 +485,44 @@ def start():
             break
 
 #%% Tactics Evaluation
-        
+"""The following code is not part of the game. It allows n simulations of the
+game to be played using the computer controlling both sides. The difficulty is
+specified for the musketeers and enemy using mdiff and ediff respectively. This
+function is useful for evaluating tactics, a summary is given in the readme."""
+     
 def play_sim(n, mdiff='E', ediff='E'):
-    computer_tactic(ediff)
-    m_win = 0
-    e_win = 0
-    m_log = []
+    computer_tactic(ediff)  # computer_tactic function is called to generate directions
+    m_win = 0  # counter for number of musketeer wins
+    e_win = 0  # counter for number of enemy wins
+    m_log = []  # log stores number of moves performed for each game
     e_log = []
-    for i in range (0, n):
+    for i in range (0, n):  # iteration to complete n games
+        # the following is a modified version of start_game() function
         board = create_board()
-        moves = 0
+        moves = 0  # counter for number of moves in the nth game
         while True:
             if has_some_legal_move_somewhere('M'):
                 board = auto_move_musketeer(mdiff)
                 moves += 1
                 if is_enemy_win():
-                    e_win += 1  # Cardinal Richleau's men win!
+                    e_win += 1
                     e_log.append(moves)
                     break
             else:
-                m_win += 1  # The Musketeers win!
+                m_win += 1
                 m_log.append(moves)
                 break
             if has_some_legal_move_somewhere('R'):
                 board = auto_move_enemy(ediff)
                 moves += 1
             else:
-                m_win += 1  # The Musketeers win!
+                m_win += 1
                 m_log.append(moves)
                 break
+    # summary statistics for simulated games
     print ('Played ' + str(n) + ' games:')
     print ('Wins - M: ' + str(m_win) + ' (' + str(round((m_win/n)*100,1)) + '%) R: ' + str(e_win) + ' (' + str(round((e_win/n)*100,1)) + '%)')
-    if m_win > 0:
+    if m_win > 0:  # for average moves statistics, if number of wins equals zero, stops divide by zero error
         print ('Avg Move No. - M: ' + str(round(sum(m_log)/len(m_log),1)))
     if e_win > 0:
         print ('Avg Move No. - R: ' + str(round(sum(e_log)/len(e_log),1)))

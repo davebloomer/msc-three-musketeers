@@ -5,6 +5,8 @@
 
 #%% Code from base implementation - no changes are present
 
+from random import choice  # Import choice from library random, chooses random element from a non-empty sequence
+
 def create_board():
     global board
     """Creates the initial Three Musketeers board and makes it globally
@@ -69,24 +71,28 @@ def adjacent_location(location, direction):
     row += moves[direction][0]  # Relevant calculation performed on row and column as defined through dictionary (-/+ 1)
     column += moves[direction][1]
     return (row, column)  # Row and column recombined to form tuple
-    
+
 def is_legal_move_by_musketeer(location, direction):
     """Tests if the Musketeer at the location can move in the direction.
     You can assume that input will always be in correct range. Raises
     ValueError exception if at(location) is not 'M'"""
-    if at(location) != 'M' or at(adjacent_location(location, direction)) != 'R':  # Logic checks character at hyperparameter location is musketeer and enemy present in hyperparameter direction
-        raise ValueError('Move Not Valid.')  # If either logic statements is false, an exception is thrown
+    if at(location) != 'M':  # Logic checks character at hyperparameter location is musketeer 
+        raise ValueError('Move Not Valid.')   # If logic statement is false, an exception is thrown
+    elif at(adjacent_location(location, direction)) == 'R':  # Logic checks enemy present in specified adjacent location
+        return True
     else:
-        return True  # Otherwise, the move is valid
-
+        return False
+    
 def is_legal_move_by_enemy(location, direction):
     """Tests if the enemy at the location can move in the direction.
     You can assume that input will always be in correct range. Raises
     ValueError exception if at(location) is not 'R'"""
-    if at(location) != 'R' or at(adjacent_location(location, direction)) != '-':  # Logic checks character at hyperparameter location is enemy and empty space present in hyperparameter direction
-        raise ValueError('Move Not Valid.')  # If either logic statements is false, an exception is thrown
+    if at(location) != 'R':  # Logic checks character at hyperparameter location is enemy 
+        raise ValueError('Move Not Valid.')  # If logic statement is false, an exception is thrown
+    elif at(adjacent_location(location, direction)) == '-':  # Logic checks if empty space is present in specified adjacent location
+        return True
     else:
-        return True  # Otherwise, the move is valid
+        return False
 
 def is_legal_location(location):
     """Tests if the location is legal on a 5x5 board.
@@ -101,25 +107,6 @@ def is_within_board(location, direction):
     You can assume that input will always be in correct range."""
     # Uses function adjacent_location to find resulting position of move, then function is_legal_location to check if valid and determine output
     return is_legal_location(adjacent_location(location, direction))
-
-def can_move_piece_at(location, direction=('left', 'right', 'up', 'down')):
-    # Included direction as hyperparameter to avoid redundancy in function is_legal_move, by default contains all legal (perpendicular) move directions
-    """Tests whether the player at the location has at least one move available.
-    You can assume that input will always be in correct range."""
-    if at(location) == 'M':  # Uses at funon to determine player at hyperparameter location, if musketeer:
-        for dir in direction:  # Itererate through each element in hyperparameter direction
-            if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == 'R':  # If location in direction contains enemy and is valid location       
-                return True  # Return True and break
-                break
-        return False  # Return False if logic not met for all directions considered
-    elif at(location) == 'R':  # Alternate scenario, if player at hyperparameter location is enemy:
-        for dir in direction:
-            if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == '-':  # If location in direction contains empty space and is valid location
-                return True  # Return True and break
-                break
-        return False  # Return False if logic not met for all directions considered
-    else:  # Else condition, if no valid moves are present for player at location, return False
-        return False
     
 def is_legal_move(location, direction):
     """Tests whether it is legal to move the piece at the location
@@ -164,8 +151,6 @@ def is_enemy_win():
     
 #%% Updated and additional functions
     
-from random import choice  # Import choice from library random, chooses random element from a non-empty sequence
-    
 def computer_tactic(difficulty):
     global tactic
     """A games strategy will be chosen for 'R', this will vary from game to game
@@ -209,50 +194,40 @@ def area(loc1, loc2, loc3):
     (row3, col3) = loc3
     return round(abs((row1*(col2-col3)+row2*(col3-col1)+row3*(col1-col2))/2), 1)
 
-def adjacent_location_for_list(moves):
-    """Calculates location next to given one, in the given direction, for use
-    on a list. Functionality similar to adjacent_location(), to be used with
-    output from all_possible_moves_for(). 
-    Does not check if the location returned is legal on a 5x5 board.
-    You can assume that input will always be in correct range."""    
-    move_dest = []
-    for i in moves:
-        (location, direction) = i
-        move_dest.append(adjacent_location(location, direction))
-    return move_dest
-
-        #or..
-        #def adjacent_location(location, direction):
-        #moves = {'left': (0,-1), 'right': (0,1), 'up': (-1,0), 'down': (1,0)}
-        #return tuple(x+y for x, y in zip(location, moves[direction]))"""
-
 def player_locations(player):
     """Returns all locations for the player in a list of tuples.
     Previously part of all_possible_moves_for(), but useful input for other
     functions."""
     return [(i, j) for i in range(0,5) for j in range(0,5) if board[i][j] == player]
+    
+def can_move_piece_at(location, direction=['left', 'up', 'down', 'right'], legal=True):
+    # Included direction as hyperparameter to avoid redundancy in function is_legal_move, by default contains all legal (perpendicular) move directions
+    """Tests whether the player at the location has at least one move available.
+    You can assume that input will always be in correct range."""
+    if at(location) == 'M':  # Uses at funon to determine player at hyperparameter location, if musketeer:
+        for dir in direction:  # Itererate through each element in hyperparameter direction
+            if is_within_board(location, dir) == True and is_legal_move_by_musketeer(location, dir) == legal:  # If location in direction contains enemy and is valid location       
+                return True  # Return True and break
+                break
+        return False  # Return False if logic not met for all directions considered
+    elif at(location) == 'R':  # Alternate scenario, if player at hyperparameter location is enemy:
+        for dir in direction:
+            if is_within_board(location, dir) == True and is_legal_move_by_enemy(location, dir) == legal:  # If location in direction contains empty space and is valid location
+                return True  # Return True and break
+            
+                break
+        return False  # Return False if logic not met for all directions considered
+    else:  # Else condition, if no valid moves are present for player at location, return False
+        return False
 
 def possible_moves_from(location, legal=True):
     moves = []
-    direction = ('left', 'up', 'down', 'right') # direction logic applied in move selection, not important for now
-    if at(location) == 'M':
-        for dir in direction:
-            if legal == True:
-                if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == 'R':
-                    moves.append(dir)
-            else:
-                if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == '-':
-                    moves.append(dir)
-    elif at(location) == 'R':
-        for dir in direction:
-            if legal == True:
-                if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) == '-':
-                    moves.append(dir)
-            else:
-                if is_within_board(location, dir) == True and at(adjacent_location(location, dir)) != '-':
-                    moves.append(dir)
+    direction=['left', 'up', 'down', 'right']
+    for dir in direction:
+        if can_move_piece_at(location, [dir], legal) == True:
+                moves.append(dir)
     return moves
-
+    
 def all_possible_moves_for(player, legal=True):
     player_loc = player_locations(player)
     moves = []
@@ -261,26 +236,24 @@ def all_possible_moves_for(player, legal=True):
             moves.append((loc, dir))
     return moves
 
+def choose_computer_move(who):
+    """The computer chooses a move for a Musketeer (who = 'M') or an
+    enemy (who = 'R') and returns it as the tuple (location, direction),
+    where a location is a (row, column) tuple as usual.
+    You can assume that input will always be in correct range."""
+    if has_some_legal_move_somewhere(who) == False:  # Logic checks if any moves are possible for hyperparameter who using function has_some_legal_move_somewhere
+        raise ValueError('No moves possible.')
+    elif who == 'M':
+        return choose_musketeer_move(difficulty=tactic[0])
+    else:
+        return choose_enemy_move(difficulty=tactic[0])
+    
 def choose_musketeer_move(difficulty='H'):
     """Based on all possible moves for 'M', chooses move that maximises proxy
     for distance to other 'M' on board.
     Returns a tuple (location, direction), where location is a (row, column) tuple."""
     if difficulty == 'E':
         return choice(all_possible_moves_for('M'))
-    elif difficulty == 'M':
-        moves = []
-        m_locations = player_locations('M')
-        m_moves = all_possible_moves_for('M')
-        for i in range (0, 3):
-            for j in range (0, len(m_moves)):
-                if m_locations[i] != m_moves[j][0]:
-                    m_loc, m_dir = m_moves[j][0], m_moves[j][1]
-                    m_next = adjacent_location(m_loc, m_dir)                
-                    if m_next[0] != m_locations[i][0] and m_next[1] != m_locations[i][1]:  # avoid common row and column
-                        moves.append(m_moves[j])
-        if len(moves) == 0:
-            moves = m_moves
-        return choice(moves)
     else:
         moves = []
         m_locations = player_locations('M')
@@ -289,10 +262,19 @@ def choose_musketeer_move(difficulty='H'):
             for j in range (0, len(m_moves)):
                 if m_locations[i] == m_moves[j][0]:
                     m_loc, m_dir = m_moves[j][0], m_moves[j][1]
-                    m_next = adjacent_location(m_loc, m_dir)                 
-                    moves.append((area(m_next,m_locations[i-1],m_locations[i-2]),m_moves[j]))  # area
-        moves = sorted(moves, reverse=True)
-        return moves[0][1]
+                    m_next = adjacent_location(m_loc, m_dir)
+                    if difficulty == 'M':
+                        if m_next[0] != m_locations[i][0] and m_next[1] != m_locations[i][1]:  # avoid common row and column
+                            moves.append(m_moves[j])
+                    else:
+                        moves.append((area(m_next,m_locations[i-1],m_locations[i-2]),m_moves[j]))  # maximise triangle area
+        if difficulty == 'M':
+            if len(moves) == 0:
+                moves = m_moves
+            return choice(moves)
+        else:
+            moves = sorted(moves, reverse=True)
+            return moves[0][1] 
 
 def choose_enemy_move(difficulty='H'):
 # replaces choose_computer_move('R')
@@ -312,44 +294,24 @@ def choose_enemy_move(difficulty='H'):
                 m_loc, m_dir = m_moves[j][0], m_moves[j][1]
                 m_move = adjacent_location(m_loc, m_dir)
                 if e_move == m_move:
-                    moves.append(e_moves[i])
-        if len(moves) == 0:
-            moves = all_possible_moves_for('R', legal=True)
-        return choice(moves)
-    else:
-        m_moves = all_possible_moves_for('M', legal=False)
-        e_moves = all_possible_moves_for('R')
-        moves = []
-        for i in range (0, len(e_moves)):
-            e_loc, e_dir = e_moves[i][0], e_moves[i][1]
-            e_move = adjacent_location(e_loc, e_dir)
-            for j in range (0, len(m_moves)):
-                m_loc, m_dir = m_moves[j][0], m_moves[j][1]
-                m_move = adjacent_location(m_loc, m_dir)
-                if e_move == m_move:
-                    moves.append((m_moves[j], e_moves[i]))
-        if len(moves) == 0:
-            return choice(all_possible_moves_for('R', legal=True))
-        move = []
-        for dir in tactic_lookup():
-            for m in moves:
-                if m[0][1] == dir:
-                    move.append(m[1])
-            if len(move) > 0:
-                return choice(move)
-
-# could make this selection in base code
-def choose_computer_move(who):
-    """The computer chooses a move for a Musketeer (who = 'M') or an
-    enemy (who = 'R') and returns it as the tuple (location, direction),
-    where a location is a (row, column) tuple as usual.
-    You can assume that input will always be in correct range."""
-    if has_some_legal_move_somewhere(who) == False:  # Logic checks if any moves are possible for hyperparameter who using function has_some_legal_move_somewhere
-        raise ValueError('No moves possible.')
-    elif who == 'M':
-        return choose_musketeer_move(difficulty=tactic[0])
-    else:
-        return choose_enemy_move(difficulty=tactic[0])
+                    if difficulty == 'M':
+                        moves.append(e_moves[i])
+                    else:
+                        moves.append((m_moves[j], e_moves[i]))
+        if difficulty == 'M':
+            if len(moves) == 0:
+                moves = all_possible_moves_for('R', legal=True)
+            return choice(moves)
+        else::
+            if len(moves) == 0:
+                return choice(all_possible_moves_for('R', legal=True))
+            move = []
+            for dir in tactic_lookup():
+                for m in moves:
+                    if m[0][1] == dir:
+                        move.append(m[1])
+                if len(move) > 0:
+                    return choice(move)
 
 #%% Communicating with the user  - no changes are present
 
@@ -488,7 +450,8 @@ def start():
 """The following code is not part of the game. It allows n simulations of the
 game to be played using the computer controlling both sides. The difficulty is
 specified for the musketeers and enemy using mdiff and ediff respectively. This
-function is useful for evaluating tactics, a summary is given in the readme."""
+function is useful for evaluating tactics, a summary of useage is given in the
+GitHub readme."""
      
 def play_sim(n, mdiff='E', ediff='E'):
     computer_tactic(ediff)  # computer_tactic function is called to generate directions

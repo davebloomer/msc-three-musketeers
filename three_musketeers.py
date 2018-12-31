@@ -12,6 +12,8 @@
 # For brevity, Cardinal Richleau's men are referred to as "enemy".
 # 'pass' is a no-nothing Python statement. Replace it with actual code.
 
+from random import choice  # Import choice from library random, chooses random element from a non-empty sequence
+
 def create_board():
     global board
     """Creates the initial Three Musketeers board and makes it globally
@@ -81,19 +83,23 @@ def is_legal_move_by_musketeer(location, direction):
     """Tests if the Musketeer at the location can move in the direction.
     You can assume that input will always be in correct range. Raises
     ValueError exception if at(location) is not 'M'"""
-    if at(location) != 'M' or at(adjacent_location(location, direction)) != 'R':  # Logic checks character at hyperparameter location is musketeer and enemy present in hyperparameter direction
-        raise ValueError('Move Not Valid.')  # If either logic statements is false, an exception is thrown
+    if at(location) != 'M':  # Logic checks character at hyperparameter location is musketeer 
+        raise ValueError('Move Not Valid.')   # If logic statement is false, an exception is thrown
+    elif at(adjacent_location(location, direction)) == 'R':  # Logic checks enemy present in specified adjacent location
+        return True
     else:
-        return True  # Otherwise, the move is valid
-
+        return False
+    
 def is_legal_move_by_enemy(location, direction):
     """Tests if the enemy at the location can move in the direction.
     You can assume that input will always be in correct range. Raises
     ValueError exception if at(location) is not 'R'"""
-    if at(location) != 'R' or at(adjacent_location(location, direction)) != '-':  # Logic checks character at hyperparameter location is enemy and empty space present in hyperparameter direction
-        raise ValueError('Move Not Valid.')  # If either logic statements is false, an exception is thrown
+    if at(location) != 'R':  # Logic checks character at hyperparameter location is enemy 
+        raise ValueError('Move Not Valid.')  # If logic statement is false, an exception is thrown
+    elif at(adjacent_location(location, direction)) == '-':  # Logic checks if empty space is present in specified adjacent location
+        return True
     else:
-        return True  # Otherwise, the move is valid
+        return False
 
 def is_legal_location(location):
     """Tests if the location is legal on a 5x5 board.
@@ -187,7 +193,6 @@ def choose_computer_move(who):
     enemy (who = 'R') and returns it as the tuple (location, direction),
     where a location is a (row, column) tuple as usual.
     You can assume that input will always be in correct range."""
-    from random import choice  # Import choice from library random, chooses random element from a non-empty sequence
     if has_some_legal_move_somewhere(who) == False:  # Logic checks if any moves are possible for hyperparameter who using function has_some_legal_move_somewhere
         raise ValueError('No moves possible.')  # If False, an exception is thrown
     else:    

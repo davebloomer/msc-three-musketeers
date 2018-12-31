@@ -154,10 +154,10 @@ def test_is_legal_move():
 def test_can_move_piece_at():
     set_board(board1)
     assert type(can_move_piece_at((0,0))) == bool
-    can_move_piece_at((0,0)) == False
-    can_move_piece_at((0,3)) == False
-    can_move_piece_at((1,3)) == True
-    can_move_piece_at((4,3)) == True
+    assert can_move_piece_at((0,0)) == False
+    assert can_move_piece_at((0,3)) == False
+    assert can_move_piece_at((1,3)) == True
+    assert can_move_piece_at((4,3)) == True
 
 def test_has_some_legal_move_somewhere():
     set_board(board1)

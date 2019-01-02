@@ -1,3 +1,5 @@
+# 13161521 - David Bloomer - MSc Data Science (PT)
+
 import pytest
 from three_musketeers import *
 
@@ -129,9 +131,8 @@ def test_is_legal_move_by_musketeer():
         
 def test_is_legal_move_by_enemy():
     create_board()
-    with pytest.raises(ValueError):
-        is_legal_move_by_enemy((0,3),'down')
-        is_legal_move_by_enemy((3,1),'left')   
+    is_legal_move_by_enemy((0,3),'down') == False
+    is_legal_move_by_enemy((3,1),'left') == False 
     set_board(board1)
     assert is_legal_move_by_enemy((3,1),'right') == True
     assert is_legal_move_by_enemy((1,2),'up') == True
@@ -175,11 +176,11 @@ def test_possible_moves_from():
     create_board()
     assert type(possible_moves_from((0,0))) == list
     assert possible_moves_from((0,0)) == []
-    assert possible_moves_from((2,2)) == ['left', 'right', 'up', 'down']
+    assert possible_moves_from((2,2)) == ['left', 'up', 'down', 'right']
     set_board(board1)
     assert possible_moves_from((0,0)) == []
     assert possible_moves_from((0,3)) == []
-    assert possible_moves_from((1,3)) == ['left', 'down']   
+    assert possible_moves_from((1,3)) == ['left', 'down']
     
 def test_is_legal_location():
     assert type(is_legal_location((0,0))) == bool

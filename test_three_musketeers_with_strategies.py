@@ -1,3 +1,5 @@
+# 13161521 - David Bloomer - MSc Data Science (PT)
+
 import pytest
 from three_musketeers_with_strategies import *
 
@@ -33,19 +35,12 @@ boardt =  [ [R, R, R, R, M],
             [_, M, _, R, R],
             [_, _, M, _, R] ] # board to demonstrate various logical options
 
-def test_computer_tactic():
-    computer_tactic('E')
-    assert type(tactic) == tuple
-    assert tactic == ('E', '')
-    computer_tactic('M')
-    assert tactic == ('M', '')
-
 def test_tactic_lookup():
-    tactic = ('H', 'WfGHet')
+    set_tactic('H', 'WfGHet')
     assert tactic_lookup() == ('down', 'left', 'right', 'up')
-    tactic = ('H', 'Vn4SHy')
+    set_tactic('H', 'Vn4SHy')
     assert tactic_lookup() == ('right', 'down', 'up', 'left')
-    tactic = ('H', 'gHwrEP')
+    set_tactic('H', 'gHwrEP')
     assert tactic_lookup() == ('up', 'right', 'left', 'down')
 
 def test_distance():
@@ -75,9 +70,9 @@ def test_can_move_piece_at():
     assert can_move_piece_at((0,0)) == False
     assert can_move_piece_at((1,2)) == True
     assert can_move_piece_at((1,3)) == True
-    assert can_move_piece_at((0,0), legal=False) == True
+    assert can_move_piece_at((0,0), legal=False) == False
     assert can_move_piece_at((1,2), legal=False) == True
-    assert can_move_piece_at((1,3), legal=False) == False
+    assert can_move_piece_at((1,3), legal=False) == True
     assert can_move_piece_at((1,2), direction=['left']) == True
     assert can_move_piece_at((1,2), direction=['down']) == False
     assert can_move_piece_at((1,2), direction=['left'], legal=False) == False
@@ -100,7 +95,7 @@ def test_possible_moves_from():
     assert possible_moves_from((1,3)) == ['left', 'down']  
     assert possible_moves_from((0,0), legal=False) == []
     assert possible_moves_from((0,3), legal=False) == ['left', 'down', 'right']
-    assert possible_moves_from((1,3), legal=False) == ['left', 'down']
+    assert possible_moves_from((1,3), legal=False) == ['up', 'right']
 
 def test_all_possible_moves_for():
     set_board(boardw)
@@ -128,4 +123,6 @@ def test_choose_enemy_move():
     set_board(boardt)
     assert type(choose_enemy_move(difficulty='E')) == tuple
     assert type(choose_enemy_move(difficulty='M')) == tuple
+    set_tactic('H', 'WfGHet')
     assert type(choose_enemy_move(difficulty='H')) == tuple
+    assert choose_enemy_move(difficulty='H') == ((2, 0), 'down')

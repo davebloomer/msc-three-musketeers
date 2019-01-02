@@ -4,15 +4,13 @@
 #%% Updated and additional functions
     
 def computer_tactic(difficulty):
-    """Stores the computer difficulty and a creates series of direction where 
-    relevant (diffulty 'H'). The directions can be used to determine strategy and 
-    vary from game to game to limit predictability. As tactic is a global
-    variable, directions are represented as an encrypted string, which can be
-    called using tactic_lookup()."""
+    """Stores the computer difficulty and a creates series of directions.
+    The directions can be used to determine strategy and vary from
+    game to game to limit predictability. As tactic is a global variable,
+    directions are represented as an encrypted string, which can be called
+    using tactic_lookup()."""
     global tactic
-    select_tactic = ''
-    if difficulty == 'H':  # If user chooses difficulty 'H', a string is chosen at random corresponding to a series of directions
-        select_tactic = choice(['ugsRGv','Wq4d66','KhzYQv','Vn4SHy','WuvaNj','gHwrEP','WfGHet','W8vzXJ'])
+    select_tactic = choice(['ugsRGv','Wq4d66','KhzYQv','Vn4SHy','WuvaNj','gHwrEP','WfGHet','W8vzXJ'])  # String chosen at random corresponding to a series of directions
     tactic = (difficulty, select_tactic)  # Sets global variable tactic to contain difficulty and series of directions where relevant
 
 def tactic_lookup():
@@ -165,16 +163,25 @@ def choose_enemy_move(difficulty):
     determines tactic used by computer. These are:
     'E' = random choice of all legal moves possible
     'M' = random choice of all legal moves that place enemy in position
-        perpendicular to musketeer
-    'H' = random choice of all legal moves that place enemy in position
         perpendicular to musketeer, with preference given to moves that draw
         musketeer in direction specified by computer tactic
+    'H' = if option exists for musketeer to move in opposite direction from
+        specified tactic, it is removed, otherwise difficulty 'M' move played
     Returns a tuple (location, direction), where location is a (row, column) tuple."""
     if difficulty == 'E':  # If computer diffuculty is 'E':
         return choice(all_possible_moves_for('R'))  # Returns random element of output from all_possible_moves_for() for enemy
     else:
+        if difficulty == 'H':  # If computer diffuculty is 'H':
+            m_moves = all_possible_moves_for('M', legal=True)  # Possible moves for musketeers that are currently available
+            moves = []  # Initialises empty list, to contain all moves that meet critera for tactic
+            for i in range (0, len(m_moves)):  # i iternation represents each possible musketeer move
+                if can_move_piece_at(adjacent_location(m_moves[i][0], m_moves[i][1]), [tactic_lookup()[-1]]) == True:  # If enemy can move away from musketeer to block movement in opposite of tactic direction
+                    moves.append((adjacent_location(m_moves[i][0], m_moves[i][1]), tactic_lookup()[-1]))  # Append enemy move to list
+            if len(moves) > 0:  # If such a move exists, return random element from moves
+                return choice(moves)
+        # If difficulty = 'M', or no valid blocking move is available for difficulty 'H':
         e_moves = all_possible_moves_for('R')  # Possible moves for enemy
-        m_moves = all_possible_moves_for('M', legal=False)  # Possble moves for musketeers that are not currently available (ie. potential next moves)
+        m_moves = all_possible_moves_for('M', legal=False)  # Possible moves for musketeers that are not currently available (ie. potential next moves)
         moves = []  # Initialises empty list, to contain all moves that meet critera for tactic
         for i in range (0, len(e_moves)):  # i iternation represents each possible enemy move
             e_next = adjacent_location(e_moves[i][0], e_moves[i][1])  # Calculate resultant location of enemy following move
@@ -184,9 +191,7 @@ def choose_enemy_move(difficulty):
                         moves.append((m_moves[j], e_moves[i]))  # Append corresponding musketeer and enemy moves
         if len(moves) == 0:  # It may be that no move meets criteria (ie. the final move of the game)
             return choice(e_moves) # In this case, return random element from all possible legal moves for enemy
-        elif difficulty == 'M':  # Once possible moves are calculated, if computer diffuculty is 'M':
-            return choice(moves)[1]  # Return random element from variable moves
-        else:  # If computer diffuculty is 'H':
+        else:
             moves_in_dir = []  # Initialises empty list, to contain subset of moves that meet critera for tactic
             for dir in tactic_lookup():  # Iteration to check each preferential move direction for tactic in turn
                 for m in moves:  # Iteration to consider each move in variable moves 

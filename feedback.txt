@@ -1,0 +1,45 @@
+Total coursework mark: 19.8 (out of 20)
+
+Exercise sheets mark: 10  (out of 10)
+
+Project mark:  9.8  (out of 10)
+
+Project feedback and mark details
+
+Correctness and adherence to specification:  30  (out of 30%)
+
+- At the very last line of three_musketeers.py, consider modifying your code as follows to ensure your code runs as submitted (whilst also running without modification in pytest). 
+
+    if __name__ == "__main__":
+        start()
+
+- Your functionality works as specified. Well Done!
+
+
+Completeness of code, tests, and commit history:  30    (out of 30%)   
+
+- Your implementation is complete.
+- Your 29 tests all pass. Your number of tests is appropriate for the project.
+- GitHub session 7 initial commit is present.
+- Your GitHub commit history is good.
+
+Coding style: 8   (out of 10%) 
+
+- Your coding style is overall good. 
+- Consider writing more succinct code where possible. e.g. three_musketeers.py (line 176), change:
+
+    if len(all_possible_moves_for(who)) > 0:
+        return True
+    else:
+        return False
+
+to:
+
+    return len(all_possible_moves_for(who)) > 0
+
+
+
+Extension:  30     (out of 30%) 
+
+- You have implemented the strategy extension which works correctly and is extremely well documented. Well done!
+
